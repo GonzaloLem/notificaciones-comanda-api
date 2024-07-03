@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
+const serverless = require("serverless-http");
 
 dotenv.config();
 
@@ -11,6 +12,7 @@ const serviceAccount = require(process.env.SERVICE_ACCOUNT);
 
 const app = express();
 const PORT = process.env.PORT || 443;
+const router = express.Router();
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -122,3 +124,8 @@ app.post("/send-mail", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+
+app.use("/.netlify/functions/index", router)
+module.exports.handler = serverless(app);
+
