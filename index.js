@@ -1,6 +1,5 @@
 
 const express = require("express");
-const functions = require('firebase-functions');
 const bodyParser = require("body-parser");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
@@ -11,7 +10,7 @@ dotenv.config();
 const serviceAccount = require(process.env.SERVICE_ACCOUNT);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 443;
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -123,5 +122,3 @@ app.post("/send-mail", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-exports.app = functions.https.onRequest(app);
