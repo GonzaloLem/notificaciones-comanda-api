@@ -1,4 +1,3 @@
-
 const express = require("express");
 const bodyParser = require("body-parser");
 const admin = require("firebase-admin");
@@ -8,10 +7,10 @@ const serverless = require("serverless-http");
 
 dotenv.config();
 
-const serviceAccount = require(process.env.SERVICE_ACCOUNT);
+const serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_SDK_KEY);
 
 const app = express();
-const PORT = process.env.PORT || 443;
+const PORT = process.env.PORT || 4000;
 const router = express.Router();
 
 admin.initializeApp({
@@ -23,12 +22,12 @@ const db = admin.firestore();
 
 app.use(bodyParser.json());
 
-app.get('/hello', (req, res) => {
+router.get('/hello', (req, res) => {
     res.send("Holaaaaa!!!!!");
-  });
+});
 
 // Endpoint para enviar una notificación a un usuario específico
-app.post("/notify", async (req, res) => {
+router.post("/notify", async (req, res) => {
   const { token, title, body } = req.body;
 
   const message = {
@@ -48,7 +47,7 @@ app.post("/notify", async (req, res) => {
 });
 
 // Endpoint para enviar notificación a todos los empleados de un rol
-app.post("/notify-role", async (req, res) => {
+router.post("/notify-role", async (req, res) => {
   const { title, body, role } = req.body;
 
   try {
@@ -79,7 +78,7 @@ app.post("/notify-role", async (req, res) => {
       tokens: employeeTokens,
     };
 
-    const response = await admin.messaging().sendEachForMulticast(message);
+    const response = await admin.messaging().sendMulticast(message);
     res.status(200).send(`Mensajes enviados: ${response.successCount}`);
   } catch (error) {
     res.status(500).send(`Error al enviar mensaje: ${error}`);
@@ -87,7 +86,7 @@ app.post("/notify-role", async (req, res) => {
 });
 
 // Endpoint para enviar un mail a un usuario
-app.post("/send-mail", async (req, res) => {
+router.post("/send-mail", async (req, res) => {
   try {
     const { aceptacion, nombreUsuario, mail } = req.body;
     const transporter = nodemailer.createTransport({
@@ -125,7 +124,6 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
+app.use("/.netlify/functions/index", router);
 
-app.use("/.netlify/functions/index", router)
 module.exports.handler = serverless(app);
-
